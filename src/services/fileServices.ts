@@ -3,41 +3,44 @@ import path from 'path';
 import type { ServiceFn } from '.';
 import { publicDir, rootDir } from '../config/config';
 
+type TreeItemType = 'directory' | 'file';
+
+interface TreeItemBase {
+  name: string;
+  path: string;
+  type: TreeItemType;
+}
+interface TreeItemWithChildren<T> extends TreeItemBase {
+  children?: T[];
+}
+
+type TreeItem = TreeItemBase | TreeItemWithChildren<TreeItem>;
+
 /* 递归扫描文件 */
-function readDir(currentPath: string, rootPath?: string) {
+async function readDir(currentPath: string, rootPath?: string): Promise<TreeItem[]> {
   const root = rootPath || currentPath;
-  return new Promise((resolve) => {
-    fs.readdir(currentPath.replace(/\\/g, '/'), (err, menu) => {
-      const allPromise: Promise<unknown>[] = [];
-      if (err) {
-        resolve({});
-        return;
+  const menu = await fs.promises.readdir(currentPath.replace(/\\/g, '/'));
+
+  const res = await Promise.all(
+    menu.map(async (currentName) => {
+      const fullPath = `${currentPath}/${currentName}`;
+      const info = await fs.promises.stat(fullPath);
+      if (info.isDirectory()) {
+        return readDir(fullPath, root).then(children => ({
+          name: currentName,
+          path: path.relative(root, fullPath).replace(/\\/g, '/'),
+          type: 'directory' as TreeItemType,
+          children,
+        }));
       }
-      menu.forEach((currentName) => {
-        const fullPath = `${currentPath}/${currentName}`;
-        const info = fs.statSync(fullPath);
-        if (info.isDirectory()) {
-          allPromise.push(
-            readDir(fullPath, root).then(children => ({
-              name: currentName,
-              path: path.relative(root, fullPath).replace(/\\/g, '/'),
-              type: 'directory',
-              children,
-            })),
-          );
-        } else {
-          allPromise.push(
-            Promise.resolve({
-              name: currentName,
-              path: path.relative(root, fullPath).replace(/\\/g, '/'),
-              type: 'file',
-            }),
-          );
-        }
-      });
-      Promise.all(allPromise).then(resolve);
-    });
-  });
+      return {
+        name: currentName,
+        path: path.relative(root, fullPath).replace(/\\/g, '/'),
+        type: 'file' as TreeItemType,
+      };
+    }),
+  );
+  return res;
 }
 
 const getFileTree: ServiceFn = async (request, opts) => {

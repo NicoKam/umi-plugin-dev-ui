@@ -2,7 +2,8 @@ import path from 'path';
 import { homedir, platform } from 'os';
 import fs from 'fs-extra';
 import ini from 'ini';
-import pkg from '../../package.json';
+
+const pkg = require('../../package.json');
 
 const fsPromise = fs.promises;
 
@@ -101,23 +102,25 @@ export const getSyncServer = async () => {
 /**
  * 获取模板缓存信息
  */
-export const getTemplateCache = async () => new Promise((resolve) => {
-  fs.readJson(templateCacheDir, (err, obj) => {
-    if (err) {
-      resolve([]);
-    }
-    resolve(obj);
+export const getTemplateCache = async () =>
+  new Promise((resolve) => {
+    fs.readJson(templateCacheDir, (err, obj) => {
+      if (err) {
+        resolve([]);
+      }
+      resolve(obj);
+    });
   });
-});
 
 /**
  * 设置模板缓存信息
  */
-export const setTemplateCache = async (jsonCache: object): Promise<void> => new Promise((resolve, reject) => {
-  fs.writeJson(templateCacheDir, jsonCache, (err) => {
-    if (err) {
-      reject(err);
-    }
-    resolve();
+export const setTemplateCache = async (jsonCache: object): Promise<void> =>
+  new Promise((resolve, reject) => {
+    fs.writeJson(templateCacheDir, jsonCache, (err) => {
+      if (err) {
+        reject(err);
+      }
+      resolve();
+    });
   });
-});

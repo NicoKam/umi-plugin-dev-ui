@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-dynamic-delete */
-import changeCase from 'change-case';
+import * as changeCase from 'change-case';
 import fs from 'fs';
 import path from 'path';
 import { publicDir, rootDir } from '../config/config';
@@ -12,7 +12,7 @@ const getTemplateInfo = async (templateRoot: string) => {
   // 取所有模板的内容
   const filesWithTemplateContent = await Promise.all(
     files.map((file: unknown) =>
-      fs
+      fs.promises
         .readFile(path.resolve(templateRoot, file.template))
         .then(buffer => ({
           ...file,
@@ -36,7 +36,7 @@ const getTemplatesInDir = async (root: string, place: string) => {
   // 查看是否存在config.js
   result = await Promise.all(
     result.map(name =>
-      fs
+      fs.promises
         .access(path.resolve(root, 'template', name, 'config.js'))
         .then(() => name)
         .catch(() => undefined),
