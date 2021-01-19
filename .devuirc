@@ -1,0 +1,12 @@
+syncServer=http://nicokam.work:3000
+
+[triggerKeys.win]
+altKey=true
+ctrlKey=true
+key=s
+
+[triggerKeys.mac]
+metaKey=true
+ctrlKey=true
+key=s
+

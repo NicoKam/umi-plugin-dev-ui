@@ -1,0 +1,6 @@
+{
+  "extends": "@ali-whale",
+  "rules": {
+    "@typescript-eslint/no-misused-promises": "off"
+  }
+}
